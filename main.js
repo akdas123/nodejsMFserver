@@ -6,7 +6,11 @@ app.use(bodyParser.json())
 var fs = require("fs");
 
 
-var path = 'C:/Users/anjdas/Documents/Personal/testProj/mftracker/src/assets/portfolio/investmentDetails.csv'
+var invPath = '/home/anjdas/CodeBase/personal/MFTracker/MFdataBase/portfolio/investmentDetails.csv'
+var totInvPath = '/home/anjdas/CodeBase/personal/MFTracker/MFdataBase/portfolio/totalInvestment.csv'
+var amcCodePath = '/home/anjdas/CodeBase/personal/MFTracker/MFdataBase/mfcode'
+var csvPath = '/home/anjdas/CodeBase/personal/MFTracker/MFdataBase/navData/'
+var mfListPath = '/home/anjdas/CodeBase/personal/MFTracker/MFdataBase/mflist/'
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -22,7 +26,7 @@ app.post('/addInvestment', function (req, res) {
         var amount = body["amount"];
         var date = body["date"];
         buffer = new Buffer(schemeCode + ";" + schemeName + ";" + amount + ";" + date + "\n");
-        fs.open(path, 'a', function(err, fd) {
+        fs.open(invPath, 'a', function(err, fd) {
             if (err) {
                 throw 'error opening file: ' + err;
             }
@@ -42,12 +46,91 @@ app.post('/addInvestment', function (req, res) {
  
 
 
-// app.get('/listUsers', function (req, res) {
-//     fs.readFile( __dirname + "/" + "users.json", 'utf8', function (err, data) {
-//         console.log( data );
-//         res.end( data );
-//     });
-//  })
+ app.get('/getAllInvestments', function (req, res) {
+	fs.exists(totInvPath, function(exists) {
+	if (exists) {
+		res.writeHead(200, {
+		"Content-Type": "application/octet-stream",
+		"Content-Disposition": "attachment; filename=abc"
+	});
+	fs.createReadStream(totInvPath).pipe(res);
+	} else {
+			res.writeHead(400, {"Content-Type": "text/plain"});
+			res.end("ERROR file does not exist");
+	}
+	});
+
+  })
+
+ app.get('/getInvDetails', function (req, res) {
+	fs.exists(invPath, function(exists) {
+	if (exists) {
+		res.writeHead(200, {
+		"Content-Type": "application/octet-stream",
+		"Content-Disposition": "attachment; filename=abc"
+	});
+	fs.createReadStream(invPath).pipe(res);
+	} else {
+			res.writeHead(400, {"Content-Type": "text/plain"});
+			res.end("ERROR file does not exist");
+	}
+	});
+
+  })
+
+
+ app.get('/getList', function (req, res) {
+	fs.exists(amcCodePath, function(exists) {
+	if (exists) {
+		res.writeHead(200, {
+		"Content-Type": "application/octet-stream",
+		"Content-Disposition": "attachment; filename=abc"
+	});
+	fs.createReadStream(amcCodePath).pipe(res);
+	} else {
+			res.writeHead(400, {"Content-Type": "text/plain"});
+			res.end("ERROR file does not exist");
+	}
+	});
+
+  })
+
+ app.get('/getMfList/:id', function (req, res) {
+	var id = req.params.id;
+	mfListPath2 = mfListPath + id + "_list.csv";
+	console.log(id);
+	fs.exists(mfListPath2, function(exists) {
+	if (exists) {
+		res.writeHead(200, {
+		"Content-Type": "application/octet-stream",
+		"Content-Disposition": "attachment; filename=" + req.params.id
+	});
+	fs.createReadStream(mfListPath2).pipe(res);
+	} else {
+			res.writeHead(400, {"Content-Type": "text/plain"});
+			res.end("ERROR file does not exist");
+	}
+	});
+
+  })
+
+ app.get('/getCsv/:id', function (req, res) {
+	csvPath2 = csvPath + req.params.id + ".csv";
+	fs.exists(csvPath2, function(exists) {
+	if (exists) {
+		res.writeHead(200, {
+		"Content-Type": "application/octet-stream",
+		"Content-Disposition": "attachment; filename=" + req.params.id
+	});
+	fs.createReadStream(csvPath2).pipe(res);
+	} else {
+			res.writeHead(400, {"Content-Type": "text/plain"});
+			res.end("ERROR file does not exist");
+	}
+	});
+
+  })
+
 
 //  app.get('/:id', function (req, res) {
 //     // First read existing users.
@@ -75,7 +158,7 @@ app.post('/addInvestment', function (req, res) {
 //    });
 // })
 
-var server = app.listen(3000, function () {
+var server = app.listen(3000, '10.195.9.176', function () {
 
   var host = server.address().address
   var port = server.address().port
