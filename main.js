@@ -14,6 +14,7 @@ var mfListPath = '/home/anjdas/CodeBase/personal/MFTracker/MFdataBase/mflist/'
 
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
   });
@@ -62,6 +63,9 @@ app.post('/addInvestment', function (req, res) {
 
   })
 
+
+
+
  app.get('/getInvDetails', function (req, res) {
 	fs.exists(invPath, function(exists) {
 	if (exists) {
@@ -78,6 +82,82 @@ app.post('/addInvestment', function (req, res) {
 
   })
 
+ app.get('/getInvDetails/:index', function (req, res) {
+	var index = req.params.index;
+	console.log(index);
+	var index2 = Number(index) + Number(1);
+	console.log(index2);
+	
+	fs.exists(invPath, function(exists) {
+	if (exists) {
+		fs.readFile(invPath, 'utf8', function(err, data)
+		{
+    			var line = data.split('\n').slice(index, index2);
+			linedata = line[0].split(';');	
+    			console.log(linedata);
+		//	res.setHeader("Content-Type": "application/json");
+			res.send(JSON.stringify({'mfId': linedata[0], 'mfName': linedata[1], 'amount': linedata[2], 'date': linedata[3]}));
+		});
+	} else {
+			res.writeHead(400, {"Content-Type": "text/plain"});
+			res.end("ERROR file does not exist");
+	}
+	});
+
+  })
+ app.put('/getInvDetails/:index', function (req, res) {
+	var index = req.params.index;
+	var index2 = Number(index) + Number(1);
+	const newAmount = req.body.amount;
+	const newDate = req.body.date;
+
+	
+	fs.exists(invPath, function(exists) {
+	if (exists) {
+		fs.readFile(invPath, 'utf8', function(err, data)
+		{
+    			var previouslines = data.split('\n').slice(0,index);
+    			var nextlines = data.split('\n').slice(index2);
+    			var line = data.split('\n').slice(index, index2);
+			linedata = line[0].split(';');	
+			linedata[2] = newAmount;
+			linedata[3] = newDate;
+    			console.log(linedata);
+
+			newLine = linedata.join(';');	
+			var data2 = previouslines.concat(newLine).concat(nextlines);
+			var newlines = data2.join('\n');
+    			fs.writeFile(invPath, newlines);
+			res.writeHead(200, {"Content-Type": "text/plain"});
+			res.end("success");
+		});
+	} else {
+			res.writeHead(400, {"Content-Type": "text/plain"});
+			res.end("ERROR file does not exist");
+	}
+	});
+
+  })
+
+ app.delete('/getInvDetails/:index', function (req, res) {
+	var index = req.params.index;
+	console.log(index);
+	fs.exists(invPath, function(exists) {
+	if (exists) {
+		fs.readFile(invPath, 'utf8', function(err, data)
+		{
+    			var previouslines = data.split('\n').slice(0,index);
+			index++;
+    			var nextlines = data.split('\n').slice(index);
+			var data2 = previouslines.concat(nextlines);
+			var newlines = data2.join('\n');
+    			fs.writeFile(invPath, newlines);
+			res.writeHead(200, {"Content-Type": "text/plain"});
+			res.end("success");
+		});
+	} 
+	});
+})
 
  app.get('/getList', function (req, res) {
 	fs.exists(amcCodePath, function(exists) {
